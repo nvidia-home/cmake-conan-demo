@@ -1,3 +1,4 @@
+install
 # Compiled Object files
 *.slo
 *.lo
@@ -31,3 +32,4 @@ build/
 *.pyc
 .conan
 .idea
+deps

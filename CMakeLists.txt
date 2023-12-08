@@ -14,20 +14,8 @@ add_definitions("-std=c++11")
 # endif()
 
 # include(${CMAKE_BINARY_DIR}/conan.cmake)
+include(${CMAKE_SOURCE_DIR}/.conanhub/conanhub.cmake)
 
-include(conan.cmake)
 
-conan_cmake_configure(REQUIRES fmt/6.1.2 
-                      GENERATORS cmake_find_package)
-
-conan_cmake_autodetect(settings)
-
-conan_cmake_install(PATH_OR_REFERENCE .
-                    BUILD missing
-                    REMOTE conancenter
-                    SETTINGS ${settings})
-
-find_package(fmt)
-
-add_executable(main main.cpp)
-target_link_libraries(main fmt::fmt)                    
+add_executable(main src/main.cpp)
+target_link_libraries(main ${CONAN_LIBS_FMT})                    

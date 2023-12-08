@@ -34,7 +34,15 @@
 # packages, in fact it shouldn't be use for that. Check the project documentation.
 
 # version: 0.19.0-dev
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON) # pic or pie
 
+# for debug target denpends
+# SET_PROPERTY(GLOBAL PROPERTY GLOBAL_DEPENDS_DEBUG_MODE ON)
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install" CACHE PATH "default install path" FORCE)
+endif()
+SET(CMAKE_BUILD_TYPE Release)
 include(CMakeParseArguments)
 
 function(_get_msvc_ide_version result)
@@ -327,7 +335,10 @@ function(conan_cmake_settings result)
     foreach(ARG ${ARGUMENTS_SETTINGS})
         set(_SETTINGS ${_SETTINGS} -s ${ARG})
     endforeach()
-
+    ## 需要补这个 arch
+    SET(_SETTINGS ${_SETTINGS} -s arch=${CMAKE_SYSTEM_PROCESSOR})
+    SET(_SETTINGS ${_SETTINGS} -s arch_target=${CMAKE_SYSTEM_PROCESSOR})
+    SET(_SETTINGS ${_SETTINGS} -s os_target=${CONAN_SYSTEM_NAME})
     message(STATUS "Conan: Settings= ${_SETTINGS}")
 
     set(${result} ${_SETTINGS} PARENT_SCOPE)
@@ -452,7 +463,7 @@ function(conan_cmake_detect_vs_runtime result)
 endfunction()
 
 function(_collect_settings result)
-    set(ARGUMENTS_PROFILE_AUTO arch build_type compiler compiler.version
+    set(ARGUMENTS_PROFILE_AUTO arch arch_target build_type compiler compiler.version
                             compiler.runtime compiler.libcxx compiler.toolset
                             compiler.cppstd os)
     foreach(ARG ${ARGUMENTS_PROFILE_AUTO})
@@ -465,11 +476,15 @@ function(_collect_settings result)
     set(${result} ${detected_setings} PARENT_SCOPE)
 endfunction()
 
+#  conan 自动根据系统生成 settings
 function(conan_cmake_autodetect detected_settings)
     _conan_detect_build_type(${ARGV})
     _conan_check_system_name()
     _conan_check_language()
     _conan_detect_compiler(${ARGV})
+    # 这里需要添加一些自定义的 settings 
+    set(_CONAN_SETTING_ARCH ${CMAKE_SYSTEM_PROCESSOR})
+    set(_CONAN_SETTING_ARCH_TARGET ${CMAKE_SYSTEM_PROCESSOR})
     _collect_settings(collected_settings)
     set(${detected_settings} ${collected_settings} PARENT_SCOPE)
 endfunction()
